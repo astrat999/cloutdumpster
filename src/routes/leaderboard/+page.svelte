@@ -32,7 +32,12 @@
                         <!-- Highlight the top 3 for extra psychological impact. -->
                         <tr class:bg-secondary={i === 0} class:bg-primary={i === 1} class:bg-accent={i === 2}>
                             <th class="text-2xl font-bold">{i + 1}</th>
-                            <td class="text-xl">{user.username}</td>
+                            <!-- TACTICAL MODIFICATION: Make the username a link to their profile. -->
+                            <td class="text-xl">
+                                <a href="/profile/{user.uid}" class="hover:underline">
+                                    {user.username}
+                                </a>
+                            </td>
                             <td class="text-2xl font-mono font-bold text-right">{user.cloutScore}</td>
                         </tr>
                     {/each}
