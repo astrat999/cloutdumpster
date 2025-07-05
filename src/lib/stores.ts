@@ -4,7 +4,9 @@ export interface UserProfile {
     username: string;
     cloutScore: number;
     email?: string;
+    cloutCoin: number; // Tactical Addition: The user's virtual wallet.
     createdAt?: string;
+    lastActive?: any; // Keep this from the previous operation.
 }
 
 import { writable } from 'svelte/store';

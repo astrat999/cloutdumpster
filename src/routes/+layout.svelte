@@ -20,7 +20,8 @@
                         uid: currentUser.uid,
                         username: currentUser.displayName || currentUser.email?.split('@')[0] || 'Anonymous',
                         email: currentUser.email,
-                        cloutScore: 0,
+                        cloutScore: 100,
+                        cloutCoin: 10, // Tactical Addition: Give them 10 coins to start. Enough to want more.
                         lastActive: serverTimestamp(),
                         createdAt: serverTimestamp()
                     });
