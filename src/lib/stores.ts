@@ -5,6 +5,7 @@ export interface UserProfile {
     cloutScore: number;
     email?: string;
     cloutCoin: number; // Tactical Addition: The user's virtual wallet.
+    photoURL?: string; // Tactical Addition: The URL for their profile picture.
     createdAt?: string;
     lastActive?: any; // Keep this from the previous operation.
 }

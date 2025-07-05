@@ -3,25 +3,39 @@
     import { user } from '$lib/stores'; // To check if a user is logged in
     import { enhance } from '$app/forms';
     import { page } from '$app/stores';
+    import ProfileUploader from '$lib/components/ProfileUploader.svelte';
 
     export let data: PageData;
     export let form: ActionData;
 
     // Reactive statements to keep data fresh
     $: profile = data.profile;
-    $: roasts = data.roasts;
+    $: roasts = data.roasts as any[];
 </script>
 
 <main class="p-4 md:p-8 bg-base-300 min-h-screen">
     <div class="max-w-4xl mx-auto">
         <!-- Profile Header -->
         <div class="card bg-base-100 shadow-xl mb-8">
-            <div class="card-body text-center">
+            <div class="card-body items-center text-center">
+                <!-- Tactical Order: "Display the user's avatar, falling back to a default." -->
+                <div class="avatar mb-4">
+                    <div class="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                        <img src={profile.photoURL || `https://i.pravatar.cc/150?u=${profile.uid}`} alt="{profile.username}'s avatar" />
+                    </div>
+                </div>
                 <h1 class="text-4xl font-bold">{profile.username}</h1>
                 <p class="text-lg text-neutral-content">Clout Score:</p>
                 <p class="text-6xl font-mono font-extrabold text-primary">{profile.cloutScore}</p>
             </div>
         </div>
+
+        <!-- Tactical Order: "Show the uploader component ONLY if the logged-in user is viewing their OWN profile." -->
+        {#if $user && $user.uid === profile.uid}
+            <div class="mb-8">
+                <ProfileUploader />
+            </div>
+        {/if}
 
         <!-- Roast Submission Form -->
         <!-- Tactical Order: "Create a form for the 'roast' action. It should only show if a user is logged in." -->
