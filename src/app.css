@@ -1,3 +1,35 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+/* Tactical Theme Application */
+html {
+    @apply bg-velvet;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Global Typography */
+.font-display {
+    font-family: 'Playfair Display', serif;
+}
+
+.font-body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-velvet;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-royal rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-purple-400;
+}
