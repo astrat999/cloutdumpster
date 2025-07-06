@@ -18,27 +18,6 @@ export interface UserProfile {
     lastActive?: any; // Keep this from the previous operation.
 }
 
-// Tactical Order: "Define the Syndicate structure for organized power"
-export interface Syndicate {
-    id: string;
-    name: string;
-    tag: string; // 3-4 letter abbreviation [CD]
-    leaderId: string;
-    memberIds: string[];
-    treasury: number; // CloutCoin™ balance
-    description: string;
-    createdAt: any;
-    totalCloutScore?: number; // Calculated field for ranking
-}
-
-export interface SyndicateEndorsement {
-    userId: string;
-    syndicateId: string;
-    syndicateTag: string;
-    expiresAt: any; // Timestamp for 24-hour expiry
-    boostAmount: number;
-}
-
 import { writable } from 'svelte/store';
 import type { User } from 'firebase/auth';
 
