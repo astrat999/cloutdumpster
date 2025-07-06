@@ -1,0 +1,69 @@
+name: Deploy CloutDumpster to Netlify
+
+on:
+  push:
+    branches: [ "main" ]   # automatic deploy on main branch pushes
+  pull_request:
+    branches: [ "main" ]   # preview deployments for PRs
+  workflow_dispatch:       # manual trigger from GitHub UI
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_VERSION: 20
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID:    ${{ secrets.NETLIFY_SITE_ID }}
+      # Firebase config for build-time
+      PUBLIC_FIREBASE_API_KEY:       ${{ secrets.PUBLIC_FIREBASE_API_KEY }}
+      PUBLIC_FIREBASE_AUTH_DOMAIN:   ${{ secrets.PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      PUBLIC_FIREBASE_PROJECT_ID:    ${{ secrets.PUBLIC_FIREBASE_PROJECT_ID }}
+      PUBLIC_FIREBASE_STORAGE_BUCKET:${{ secrets.PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      PUBLIC_FIREBASE_APP_ID:        ${{ secrets.PUBLIC_FIREBASE_APP_ID }}
+      # Stripe config
+      PUBLIC_STRIPE_PK:              ${{ secrets.PUBLIC_STRIPE_PK }}
+
+    steps:
+    - name: 🔥 Check out the dumpster code
+      uses: actions/checkout@v4
+
+    - name: 🚀 Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🛠️ Build the dopamine factory
+      run: npm run build
+
+    - name: 🎯 Deploy to Netlify (Production)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: netlify/actions/cli@v2
+      with:
+        args: deploy --dir=build --prod
+
+    - name: 👀 Deploy Preview (PR only)
+      if: github.event_name == 'pull_request'
+      uses: netlify/actions/cli@v2
+      with:
+        args: deploy --dir=build --alias=pr-${{ github.event.number }}
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+    - name: 📝 Comment PR with preview URL
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '🔥 **CloutDumpster Preview Deploy** 🔥\n\n✅ Preview URL: https://pr-${{ github.event.number }}--creative-cascaron-39e72b.netlify.app\n\nTest the dopamine factory before merging! 🎮'
+          })

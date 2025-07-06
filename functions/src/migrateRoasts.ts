@@ -1,10 +1,11 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { CallableRequest } from "firebase-functions/v2/https";
 
 // One-time migration to rename 'roasts' collection to 'whispers'
-export const migrateRoastsToWhispers = functions.https.onCall(async (data, context) => {
+export const migrateRoastsToWhispers = functions.https.onCall(async (request: CallableRequest) => {
     // Require authentication for security
-    if (!context.auth) {
+    if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
