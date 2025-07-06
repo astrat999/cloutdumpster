@@ -63,7 +63,7 @@
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <h2 class="card-title">🔔 Control Your Descent</h2>
-            <p>Enable notifications to be instantly alerted to new roasts, score changes, and other vital drama.</p>
+            <p>Enable notifications to be instantly alerted to new whispers, score changes, and other vital drama.</p>
             <div class="card-actions justify-end">
                 <button class="btn btn-primary" on:click={subscribeUser} disabled={isSubscribed}>
                     {isSubscribed ? '✅ You Are Ours' : '🔔 Enable Notifications'}

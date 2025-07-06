@@ -13,7 +13,7 @@
 
     // Reactive statements to keep data fresh
     $: profile = data.profile;
-    $: roasts = data.roasts as any[];
+    $: whispers = data.whispers as any[];
     $: isOwnProfile = $user && $user.uid === profile.uid;
 </script>
 
@@ -99,22 +99,22 @@
             </div>
         {/if}
 
-        <!-- Roast Submission Form -->
+        <!-- Whisper Submission Form -->
         {#if $user && !isOwnProfile}
             <div class="bg-silk/30 rounded-2xl p-6 border border-royal/20 mb-8">
-                <h3 class="font-display text-xl font-bold text-white mb-4">Roast this User (Anonymously)</h3>
-                <form method="POST" action="?/roast" use:enhance class="space-y-4">
+                <h3 class="font-display text-xl font-bold text-white mb-4">Drop a comment (Anonymously)</h3>
+                <form method="POST" action="?/whisper" use:enhance class="space-y-4">
                     <textarea 
-                        name="roastText" 
+                        name="whisperText" 
                         class="w-full bg-velvet/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-royal focus:outline-none resize-none" 
-                        placeholder="Unleash your fury..."
+                        placeholder="Throw shade anonymously..."
                         rows="3"
                     ></textarea>
                     <button 
                         type="submit" 
-                        class="w-full bg-gradient-to-r from-red-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:from-red-700 hover:to-pink-700 transition-all duration-200"
+                        class="w-full bg-gradient-to-r from-royal to-purple-600 text-white font-semibold py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
                     >
-                        🔥 Roast Them
+                        � Send Whisper
                     </button>
                 </form>
                 
@@ -126,23 +126,23 @@
             </div>
         {/if}
 
-        <!-- Roasts Display -->
+        <!-- Whispers Display -->
         <div class="bg-silk/30 rounded-2xl p-6 border border-royal/20">
-            <h3 class="font-display text-xl font-bold text-white mb-6">The Roasting Pit</h3>
-            {#if roasts && roasts.length > 0}
+            <h3 class="font-display text-xl font-bold text-white mb-6">The Whisper Chamber</h3>
+            {#if whispers && whispers.length > 0}
                 <div class="space-y-4">
-                    {#each roasts as roast}
-                        <div class="bg-velvet/50 rounded-xl p-4 border border-red-500/20">
-                            <p class="text-gray-300">"{roast.text}"</p>
+                    {#each whispers as whisper}
+                        <div class="bg-velvet/50 rounded-xl p-4 border border-royal/20">
+                            <p class="text-gray-300">"{whisper.text}"</p>
                             <p class="text-gray-500 text-xs mt-2 text-right">
-                                Roasted on: {new Date(roast.createdAt?.toDate()).toLocaleString()}
+                                Whispered on: {new Date(whisper.createdAt?.toDate()).toLocaleString()}
                             </p>
                         </div>
                     {/each}
                 </div>
             {:else}
                 <div class="text-center py-8">
-                    <p class="text-gray-400">This user is un-roasted. A pristine soul in a dumpster fire.</p>
+                    <p class="text-gray-400">Silent as the grave. No whispers yet.</p>
                 </div>
             {/if}
         </div>

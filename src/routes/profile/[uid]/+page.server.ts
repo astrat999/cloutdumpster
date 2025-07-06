@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import type { UserProfile } from '$lib';
 
-// Tactical Order: "Create a SvelteKit `load` function to fetch a user's profile and their roasts."
+// Tactical Order: "Create a SvelteKit `load` function to fetch a user's profile and their whispers."
 export const load: PageServerLoad = async ({ params }) => {
     const { uid } = params;
 
@@ -18,41 +18,41 @@ export const load: PageServerLoad = async ({ params }) => {
 
     const profile = userSnap.data() as UserProfile;
 
-    // Fetch the roasts from the subcollection, ordered by creation time.
-    const roastsRef = collection(db, 'users', uid, 'roasts');
-    const q = query(roastsRef, orderBy('createdAt', 'desc'));
-    const roastsSnap = await getDocs(q);
+    // Fetch the whispers from the subcollection, ordered by creation time.
+    const whispersRef = collection(db, 'users', uid, 'whispers');
+    const q = query(whispersRef, orderBy('createdAt', 'desc'));
+    const whispersSnap = await getDocs(q);
 
-    const roasts = roastsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const whispers = whispersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     return {
         profile,
-        roasts
+        whispers
     };
 };
 
-// Tactical Order: "Create a SvelteKit `roast` action to submit a new anonymous roast."
+// Tactical Order: "Create a SvelteKit `whisper` action to submit a new anonymous whisper."
 export const actions: Actions = {
-    roast: async ({ request, params, locals }) => {
-        // We will use `locals` to get the current user later to prevent self-roasting.
+    whisper: async ({ request, params, locals }) => {
+        // We will use `locals` to get the current user later to prevent self-whispering.
         // For now, we keep it simple.
         const { uid: targetUid } = params;
         const data = await request.formData();
-        const roastText = data.get('roastText') as string;
+        const whisperText = data.get('whisperText') as string;
 
-        if (!roastText || roastText.trim().length < 10) {
-            return { success: false, message: 'A roast must have at least 10 characters of substance.' };
+        if (!whisperText || whisperText.trim().length < 10) {
+            return { success: false, message: 'A whisper must have at least 10 characters of substance.' };
         }
 
-        // Add the new roast to the 'roasts' subcollection of the target user.
-        const roastsRef = collection(db, 'users', targetUid, 'roasts');
-        await addDoc(roastsRef, {
-            text: roastText,
+        // Add the new whisper to the 'whispers' subcollection of the target user.
+        const whispersRef = collection(db, 'users', targetUid, 'whispers');
+        await addDoc(whispersRef, {
+            text: whisperText,
             createdAt: serverTimestamp(),
-            // We could store the roaster's UID here for moderation, but display it as anonymous.
-            // roasterId: locals.user.uid 
+            // We could store the whisperer's UID here for moderation, but display it as anonymous.
+            // whispererId: locals.user.uid 
         });
 
-        return { success: true, message: 'Your venom has been delivered.' };
+        return { success: true, message: 'Your whisper has been delivered.' };
     }
 };

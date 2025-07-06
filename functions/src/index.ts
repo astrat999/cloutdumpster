@@ -137,13 +137,13 @@ export const gossipBot = onSchedule({ schedule: "every 24 hours" }, async (event
     logger.info(`Posted gossip: ${gossipText}`);
 });
 
-// Tactical Order: "Create a function that triggers when a new roast is written."
-export const sendRoastNotification = onDocumentWritten("users/{userId}/roasts/{roastId}", async (event) => {
+// Tactical Order: "Create a function that triggers when a new whisper is written."
+export const sendWhisperNotification = onDocumentWritten("users/{userId}/whispers/{whisperId}", async (event) => {
     const userId = event.params.userId;
-    const roastData = event.data?.after.data();
+    const whisperData = event.data?.after.data();
 
-    if (!roastData) {
-        logger.log("No roast data found.");
+    if (!whisperData) {
+        logger.log("No whisper data found.");
         return null;
     }
 
@@ -157,8 +157,8 @@ export const sendRoastNotification = onDocumentWritten("users/{userId}/roasts/{r
     const subscription = subDoc.data();
 
     const payload = JSON.stringify({
-        title: "🔥 You've Been Roasted! 🔥",
-        body: `Someone just left this gem on your profile: "${roastData.text.substring(0, 100)}..."`,
+        title: "� Someone whispered about you!",
+        body: `A mysterious comment just appeared: "${whisperData.text.substring(0, 100)}..."`,
         icon: "/icons/high-heat.png",
         data: { url: `/profile/${userId}` }
     });
@@ -166,7 +166,7 @@ export const sendRoastNotification = onDocumentWritten("users/{userId}/roasts/{r
     try {
         if (subscription) {
             await webpush.sendNotification(subscription as any, payload);
-            logger.log(`Successfully sent roast notification to user ${userId}.`);
+            logger.log(`Successfully sent whisper notification to user ${userId}.`);
         }
     } catch (error: any) {
         logger.error(`Error sending notification to ${userId}:`, error);
@@ -275,3 +275,97 @@ export const stripeWebhook = onRequest(async (request, response) => {
 
     response.status(200).send();
 });
+
+// === TACTICAL ORDER: ROAST TO WHISPER MIGRATION ===
+export const migrateRoastsToWhispers = onCall(
+    { region: "us-central1" },
+    async (request) => {
+        // Require authentication for security
+        if (!request.auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+        }
+
+        const batch = db.batch();
+        
+        try {
+            // Get all users to migrate their roasts subcollections
+            const usersSnapshot = await db.collection('users').get();
+            
+            for (const userDoc of usersSnapshot.docs) {
+                const userId = userDoc.id;
+                
+                // Get all roasts for this user
+                const roastsSnapshot = await db.collection('users').doc(userId).collection('roasts').get();
+                
+                for (const roastDoc of roastsSnapshot.docs) {
+                    const roastData = roastDoc.data();
+                    
+                    // Create new whisper document
+                    const whisperRef = db.collection('users').doc(userId).collection('whispers').doc(roastDoc.id);
+                    batch.set(whisperRef, roastData);
+                    
+                    // Delete old roast document
+                    batch.delete(roastDoc.ref);
+                }
+            }
+            
+            await batch.commit();
+            
+            logger.log('Successfully migrated roasts to whispers');
+            return { success: true, message: 'Successfully migrated roasts to whispers' };
+            
+        } catch (error) {
+            logger.error('Migration failed:', error);
+            throw new functions.https.HttpsError('internal', 'Migration failed');
+        }
+    }
+);
+
+// === TACTICAL ORDER: CLOUT DRIFT SYSTEM ===
+export const updateDriftScores = onSchedule(
+    {
+        schedule: "every 60 minutes",
+        region: "us-central1"
+    },
+    async () => {
+        logger.log("Starting hourly clout drift update...");
+        
+        const batch = db.batch();
+        const now = admin.firestore.Timestamp.now();
+        const twentyFourHoursAgo = admin.firestore.Timestamp.fromMillis(now.toMillis() - (24 * 60 * 60 * 1000));
+        
+        try {
+            // Get all users
+            const usersSnapshot = await db.collection('users').get();
+            let driftedUsers = 0;
+            let totalUsers = usersSnapshot.size;
+            
+            for (const userDoc of usersSnapshot.docs) {
+                const userData = userDoc.data();
+                const lastActivity = userData.lastActive;
+                
+                // Check if user has been inactive for more than 24 hours
+                if (lastActivity && lastActivity < twentyFourHoursAgo) {
+                    const currentScore = userData.cloutScore || 0;
+                    const newScore = Math.floor(currentScore * 0.95); // 5% decay
+                    
+                    if (newScore !== currentScore && currentScore > 0) {
+                        batch.update(userDoc.ref, {
+                            cloutScore: newScore,
+                            driftApplied: now,
+                            momentumLoss: currentScore - newScore
+                        });
+                        driftedUsers++;
+                    }
+                }
+            }
+            
+            await batch.commit();
+            
+            logger.log(`Clout drift applied to ${driftedUsers} out of ${totalUsers} users`);
+            
+        } catch (error) {
+            logger.error('Clout drift update failed:', error);
+        }
+    }
+);
