@@ -5,6 +5,7 @@
     import { page } from '$app/stores';
     import ProfileUploader from '$lib/components/ProfileUploader.svelte';
     import Top6 from '$lib/components/Top6.svelte';
+    import DisplaySelector from '$lib/components/DisplaySelector.svelte';
     import Header from '$lib/components/Header.svelte';
 
     export let data: PageData;
@@ -27,12 +28,28 @@
                 <div class="relative">
                     <div class="w-40 h-40 rounded-full overflow-hidden bg-gradient-to-br from-royal to-purple-700 p-1">
                         <div class="w-full h-full rounded-full overflow-hidden bg-velvet flex items-center justify-center">
-                            {#if profile.videoURL}
+                            {#if profile.primaryDisplay === 'video' && profile.videoURL}
                                 <video 
                                     src={profile.videoURL} 
                                     autoplay 
                                     muted 
                                     loop 
+                                    playsinline
+                                    class="w-full h-full object-cover"
+                                ></video>
+                            {:else if profile.primaryDisplay === 'photo' && profile.photoURL}
+                                <img 
+                                    src={profile.photoURL} 
+                                    alt="{profile.username}'s avatar" 
+                                    class="w-full h-full object-cover"
+                                />
+                            {:else if profile.videoURL}
+                                <video 
+                                    src={profile.videoURL} 
+                                    autoplay 
+                                    muted 
+                                    loop 
+                                    playsinline
                                     class="w-full h-full object-cover"
                                 ></video>
                             {:else if profile.photoURL}
@@ -76,8 +93,9 @@
 
         <!-- Profile Management (Own Profile Only) -->
         {#if isOwnProfile}
-            <div class="mb-8">
+            <div class="space-y-6 mb-8">
                 <ProfileUploader />
+                <DisplaySelector />
             </div>
         {/if}
 

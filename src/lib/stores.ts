@@ -13,6 +13,7 @@ export interface UserProfile {
         lng: number;
         geohash: string;
     }; // Tactical Addition: Location for proximity features
+    primaryDisplay?: 'photo' | 'video'; // Tactical Addition: User's preferred avatar type
     createdAt?: string;
     lastActive?: any; // Keep this from the previous operation.
 }

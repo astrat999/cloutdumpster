@@ -141,12 +141,28 @@
                     <!-- User Slot Filled -->
                     <a href="/profile/{top6Users[index].uid}" class="block w-full h-full">
                         <div class="w-full h-full bg-gradient-to-br from-royal to-purple-700 flex items-center justify-center relative overflow-hidden">
-                            {#if top6Users[index].videoURL}
+                            {#if top6Users[index].primaryDisplay === 'video' && top6Users[index].videoURL}
                                 <video 
                                     src={top6Users[index].videoURL} 
                                     autoplay 
                                     muted 
                                     loop 
+                                    playsinline
+                                    class="w-full h-full object-cover"
+                                ></video>
+                            {:else if top6Users[index].primaryDisplay === 'photo' && top6Users[index].photoURL}
+                                <img 
+                                    src={top6Users[index].photoURL} 
+                                    alt={top6Users[index].username}
+                                    class="w-full h-full object-cover"
+                                />
+                            {:else if top6Users[index].videoURL}
+                                <video 
+                                    src={top6Users[index].videoURL} 
+                                    autoplay 
+                                    muted 
+                                    loop 
+                                    playsinline
                                     class="w-full h-full object-cover"
                                 ></video>
                             {:else if top6Users[index].photoURL}
@@ -237,7 +253,13 @@
                             on:click={() => addToTop6(result)}
                         >
                             <div class="w-10 h-10 rounded-full bg-gradient-to-r from-royal to-purple-600 flex items-center justify-center overflow-hidden">
-                                {#if result.photoURL}
+                                {#if result.primaryDisplay === 'video' && result.videoURL}
+                                    <video src={result.videoURL} muted loop autoplay class="w-full h-full object-cover"></video>
+                                {:else if result.primaryDisplay === 'photo' && result.photoURL}
+                                    <img src={result.photoURL} alt={result.username} class="w-full h-full object-cover" />
+                                {:else if result.videoURL}
+                                    <video src={result.videoURL} muted loop autoplay class="w-full h-full object-cover"></video>
+                                {:else if result.photoURL}
                                     <img src={result.photoURL} alt={result.username} class="w-full h-full object-cover" />
                                 {:else}
                                     <span class="text-white font-semibold">{result.username?.charAt(0).toUpperCase()}</span>
