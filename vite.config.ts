@@ -8,12 +8,28 @@ export default defineConfig({
 		// Tactical Order: "Configure the SvelteKitPWA plugin."
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
-			strategies: 'injectManifest', // Tactical Change: Use our own service worker file
-			srcDir: 'src',
-			filename: 'sw.ts',
+			strategies: 'generateSW',
+			workbox: {
+				globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
+				runtimeCaching: [
+					{
+						urlPattern: /^https:\/\/api\./,
+						handler: 'NetworkFirst',
+						options: {
+							cacheName: 'api-cache',
+							networkTimeoutSeconds: 5,
+						}
+					},
+					{
+						urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'images',
+						}
+					}
+				]
+			},
 			manifest: {
-				// We are pointing it to our manifest file.
-				// This is simpler than defining the manifest inline.
 				name: 'CloutDumpster',
 				short_name: 'CloutDumpster',
 				description: 'Your reputation is garbage. Embrace it.',

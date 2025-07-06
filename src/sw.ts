@@ -1,7 +1,43 @@
 /// <reference lib="webworker" />
 import { build, files, version } from '$service-worker';
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { NetworkFirst, CacheFirst } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
+
+// Clean up any old caches
+cleanupOutdatedCaches();
+
+// Precache all static assets
+precacheAndRoute(self.__WB_MANIFEST);
+
+// Cache the SvelteKit app shell
+registerRoute(
+  new NavigationRoute(
+    new NetworkFirst({
+      cacheName: 'app-shell',
+      networkTimeoutSeconds: 3,
+    })
+  )
+);
+
+// Cache API calls
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-cache',
+    networkTimeoutSeconds: 5,
+  })
+);
+
+// Cache images
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'images',
+  })
+);
 
 // Tactical Order: "Add an event listener for 'push' events."
 self.addEventListener('push', (event) => {

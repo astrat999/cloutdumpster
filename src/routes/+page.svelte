@@ -15,14 +15,22 @@
   {#if $user && $userProfile}
     <!-- Elegant Vertical Feed Layout -->
     <div class="max-w-4xl mx-auto px-4 py-8">
-        <!-- Welcome Section -->
+        <!-- Welcome Section with Momentum Feedback -->
         <div class="text-center mb-12">
             <h1 class="font-display text-5xl font-bold text-white mb-4">
                 Welcome to the <span class="text-royal">Inner Circle</span>
             </h1>
-            <p class="text-gray-400 text-lg">
+            <p class="text-gray-400 text-lg mb-6">
                 Your exclusive gateway to digital status and influence
             </p>
+            
+            <!-- Momentum Surge Banner -->
+            {#if $userProfile?.momentumLoss}
+                <div class="bg-gradient-to-r from-electric/20 to-royal/20 border border-electric/30 rounded-xl p-4 mb-6 max-w-md mx-auto">
+                    <p class="text-electric font-semibold">⚡ Momentum surge detected!</p>
+                    <p class="text-gray-300 text-sm">+{Math.floor(Math.random() * 15) + 5} Clout gained while you were away</p>
+                </div>
+            {/if}
         </div>
 
         <!-- Main Navigation Grid -->

@@ -2,6 +2,7 @@ import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage'; // Tactical Import
+import { getFunctions } from 'firebase/functions';
 
 // This special SvelteKit syntax securely imports your secret keys from the .env file.
 import {
@@ -29,3 +30,4 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app); // Tactical Addition
+export const functions = getFunctions(app);
