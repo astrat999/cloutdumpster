@@ -3,6 +3,7 @@
   import { user, userProfile } from '$lib/stores';
   import Login from '$lib/components/Login.svelte';
   import Spyglass from '$lib/components/Spyglass.svelte';
+  import PremiumFilters from '$lib/components/PremiumFilters.svelte';
 </script>
 
 <main class="flex flex-col items-center justify-center min-h-screen p-4">
@@ -27,6 +28,11 @@
                 <a href="/rank" class="btn btn-primary btn-lg flex-1">Enter the Arena</a>
                 <a href="/leaderboard" class="btn btn-secondary btn-lg flex-1">View Leaderboard</a>
             </div>
+            
+            <div class="flex flex-col md:flex-row gap-4 mt-4">
+                <a href="/feed" class="btn btn-accent btn-lg flex-1">🔥 The Heat Feed</a>
+                <a href="/profile/{$user.uid}" class="btn btn-info btn-lg flex-1">Your Profile</a>
+            </div>
 
             <button on:click={() => auth.signOut()} class="btn btn-warning btn-outline mt-8">
                 Abandon Your Clout (Sign Out)
@@ -35,6 +41,9 @@
 
         <!-- Tactical Addition: The Spyglass Component -->
         <Spyglass />
+        
+        <!-- Tactical Addition: The Premium Filters Component -->
+        <PremiumFilters />
     </div>
   {:else if !$user}
     <Login />
