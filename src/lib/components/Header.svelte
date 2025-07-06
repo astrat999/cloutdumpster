@@ -12,6 +12,13 @@
                     <a href="/" class="font-display text-2xl font-bold text-royal">
                         CloutDumpster
                     </a>
+                    
+                    <!-- Navigation Links -->
+                    <div class="hidden md:flex items-center space-x-6 ml-8">
+                        <a href="/feed" class="text-gray-300 hover:text-white transition-colors font-medium">Feed</a>
+                        <a href="/store" class="text-gray-300 hover:text-gold transition-colors font-medium">💰 Store</a>
+                        <a href="/leaderboard" class="text-gray-300 hover:text-white transition-colors font-medium">Leaderboard</a>
+                    </div>
                 </div>
 
                 <!-- Stats Display -->

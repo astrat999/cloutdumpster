@@ -1,15 +1,23 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { onCall, onRequest } from "firebase-functions/v2/https"; // Tactical Import for Stripe
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import * as webpush from "web-push";
+import Stripe from "stripe"; // Tactical Import
 
 admin.initializeApp();
 const db = admin.firestore();
 const visionClient = new ImageAnnotatorClient();
+
+// Tactical Order: "Initialize the Stripe client with the secret key."
+const stripeSecretKey = functions.config().stripe?.secret_key;
+const stripeClient = stripeSecretKey ? new Stripe(stripeSecretKey, {
+    apiVersion: '2025-06-30.basil',
+}) : null;
 
 // Tactical Order: "Configure web-push with VAPID keys."
 const vapidPublicKey = "BFhep7uswxcrFtbWlCx6-dQE9VZjFIeAHWg4EySQf-jQk26Ka0PXuSamOVLvEWnQwq-twUNrKdg01AOQ5pEmBNc"; // The same public key from your .env file
@@ -168,4 +176,102 @@ export const sendRoastNotification = onDocumentWritten("users/{userId}/roasts/{r
         }
     }
     return null;
+});
+
+// === STRIPE PAYMENT FUNCTIONS - THE GILDED CAGE ===
+
+// Tactical Order: "Create an onCall function to create a Stripe Checkout session."
+export const createStripeCheckout = onCall(async (request) => {
+    // Ensure the user is authenticated. onCall does this automatically.
+    if (!request.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "You must be logged in to make a purchase.");
+    }
+
+    if (!stripeClient) {
+        throw new functions.https.HttpsError("failed-precondition", "Payment system not configured.");
+    }
+
+    const { priceId, successUrl, cancelUrl } = request.data;
+    const userId = request.auth.uid;
+
+    if (!priceId || !successUrl || !cancelUrl) {
+        throw new functions.https.HttpsError("invalid-argument", "Missing required purchase data.");
+    }
+
+    try {
+        const session = await stripeClient.checkout.sessions.create({
+            payment_method_types: ["card"],
+            mode: "payment",
+            line_items: [{
+                price: priceId,
+                quantity: 1,
+            }],
+            // We pass the userId and priceId in the metadata so we know who to give coins to on success.
+            metadata: {
+                userId: userId,
+                priceId: priceId
+            },
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+        });
+
+        return { sessionId: session.id, sessionUrl: session.url };
+
+    } catch (error) {
+        logger.error("Stripe session creation failed:", error);
+        throw new functions.https.HttpsError("internal", "Could not create Stripe session.");
+    }
+});
+
+// Tactical Order: "Create an onRequest function to handle the Stripe webhook."
+export const stripeWebhook = onRequest(async (request, response) => {
+    if (!stripeClient) {
+        logger.error("Stripe client not initialized");
+        response.status(500).send("Payment system not configured");
+        return;
+    }
+
+    const sig = request.headers["stripe-signature"];
+    // You need to get your webhook signing secret from the Stripe Dashboard (Developers > Webhooks > Add endpoint)
+    const endpointSecret = functions.config().stripe?.webhook_secret;
+
+    if (!endpointSecret) {
+        logger.error("Webhook secret not configured");
+        response.status(500).send("Webhook not configured");
+        return;
+    }
+
+    let event;
+    try {
+        event = stripeClient.webhooks.constructEvent(request.rawBody, sig as string, endpointSecret);
+    } catch (err: any) {
+        logger.error("Webhook signature verification failed.", err.message);
+        response.status(400).send(`Webhook Error: ${err.message}`);
+        return;
+    }
+
+    // Handle the checkout.session.completed event
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const { userId, priceId } = session.metadata || {};
+
+        // Define how many coins each priceId gives. This MUST match your Stripe setup.
+        const coinMap: Record<string, number> = {
+            'price_1RhofqPFixwUyCR6M4TTJGL9': 100,  // The Intern - $1.99
+            'price_1RhogHPFixwUyCR6H5YqPhvd': 500,  // The Influencer - $7.99  
+            'price_1RhogcPFixwUyCR6Jy5hGIvo': 1000  // The Whale - $12.99
+        };
+        
+        const coinsToGrant = priceId ? coinMap[priceId] : 0;
+
+        if (coinsToGrant && userId) {
+            const userRef = db.collection("users").doc(userId);
+            await userRef.update({ cloutCoin: admin.firestore.FieldValue.increment(coinsToGrant) });
+            logger.log(`Granted ${coinsToGrant} CloutCoin to user ${userId} for purchase ${priceId}.`);
+        } else {
+            logger.error(`Invalid purchase data: userId=${userId}, priceId=${priceId}, coins=${coinsToGrant}`);
+        }
+    }
+
+    response.status(200).send();
 });
