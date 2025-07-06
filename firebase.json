@@ -3,6 +3,8 @@
     {
       "source": "functions",
       "codebase": "default",
+      "runtime": "nodejs22",
+      "region": "us-central1",
       "ignore": [
         "node_modules",
         ".git",

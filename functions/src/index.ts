@@ -1,16 +1,58 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
-// import { onObjectFinalized } from "firebase-functions/v2/storage"; // Tactical Import - temporarily disabled
+// import { onObjectFinalized } from "firebase-functions/v2/storage"; // Temporarily disabled due to bucket region issue
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-// import { ImageAnnotatorClient } from "@google-cloud/vision"; // Tactical Import - temporarily disabled
+// import { ImageAnnotatorClient } from "@google-cloud/vision"; // Temporarily disabled due to bucket region issue
 
-// Initialize the Admin SDK once.
 admin.initializeApp();
 const db = admin.firestore();
-// const visionClient = new ImageAnnotatorClient(); // Initialize the Vision AI client - temporarily disabled
+// const visionClient = new ImageAnnotatorClient(); // Temporarily disabled due to bucket region issue
 
-// Tactical Order: "Create a scheduled function using the modern v2 `onSchedule` syntax."
-// This is the new, correct way to define a scheduled function.
+// --- The Corrected "Heat" Algorithm ---
+// Tactical Order: "Re-define the storage function with an explicit bucket and region."
+// Note: Temporarily commented out due to persistent bucket region detection issue
+// This will need manual configuration via Google Cloud Console
+/*
+const BUCKET_NAME = "clout-dumpster.appspot.com"; // Your default bucket name
+
+export const analyzeImageForHeat = onObjectFinalized({
+    bucket: BUCKET_NAME,
+    // We are now explicitly telling the function where to operate. This bypasses the auto-detection failure.
+    region: "us-central1", 
+}, async (event) => {
+    const filePath = event.data.name;
+    const contentType = event.data.contentType;
+
+    if (!contentType?.startsWith("image/") || !filePath?.startsWith("feed-images/")) {
+        return null;
+    }
+    
+    // ... The rest of the function logic remains the same. It is correct.
+    logger.log(`Analyzing new image: ${filePath}`);
+    const [result] = await visionClient.safeSearchDetection(`gs://${BUCKET_NAME}/${filePath}`);
+    const detections = result.safeSearchAnnotation;
+    const heatScore = (
+        (detections?.racy === "LIKELY" || detections?.racy === "VERY_LIKELY" ? 2 : 0) +
+        (detections?.adult === "LIKELY" || detections?.adult === "VERY_LIKELY" ? 2 : 0)
+    );
+    const docId = filePath.split('/')[1];
+    if (!docId) return null;
+    const feedDocRef = db.collection("feed").doc(docId);
+    await feedDocRef.update({ heatScore: heatScore, isAnalyzed: true });
+    if (heatScore > 1) {
+        const feedDoc = await feedDocRef.get();
+        const userId = feedDoc.data()?.userId;
+        if (userId) {
+            const userRef = db.collection("users").doc(userId);
+            await userRef.update({ cloutCoin: admin.firestore.FieldValue.increment(25) });
+            logger.log(`Awarded 25 CloutCoin to user ${userId} for high-heat post.`);
+        }
+    }
+    return null;
+});
+*/
+
+// --- The existing, functional bots ---
 export const decayCloutScores = onSchedule({ schedule: "every 24 hours" }, async (event) => {
     logger.info("Starting Clout Score Decay function.", { structuredData: true });
 
@@ -42,47 +84,6 @@ export const decayCloutScores = onSchedule({ schedule: "every 24 hours" }, async
     logger.info(`Successfully decayed scores for ${querySnapshot.size} users.`);
 });
 
-// Tactical Order: "Create a Cloud Function that triggers on file upload to 'feed-images/' and analyzes it with Vision AI."
-// Note: Temporarily commented out due to storage bucket region configuration
-// Enable this after configuring storage bucket region properly
-/*
-export const analyzeImageForHeat = onObjectFinalized({ bucket: "clout-dumpster.appspot.com" }, async (event) => {
-    const filePath = event.data.name;
-    const contentType = event.data.contentType;
-
-    if (!contentType?.startsWith("image/") || !filePath?.startsWith("feed-images/")) {
-        return null;
-    }
-
-    logger.log(`Analyzing new image: ${filePath}`);
-    const [result] = await visionClient.safeSearchDetection(`gs://${event.data.bucket}/${filePath}`);
-    const detections = result.safeSearchAnnotation;
-
-    const heatScore = (
-        (detections?.racy === "LIKELY" || detections?.racy === "VERY_LIKELY" ? 2 : 0) +
-        (detections?.adult === "LIKELY" || detections?.adult === "VERY_LIKELY" ? 2 : 0)
-    );
-
-    const docId = filePath.split('/')[1];
-    if (!docId) return null;
-
-    const feedDocRef = admin.firestore().collection("feed").doc(docId);
-    await feedDocRef.update({ heatScore: heatScore, isAnalyzed: true });
-
-    if (heatScore > 1) {
-        const feedDoc = await feedDocRef.get();
-        const userId = feedDoc.data()?.userId;
-        if (userId) {
-            const userRef = admin.firestore().collection("users").doc(userId);
-            await userRef.update({ cloutCoin: admin.firestore.FieldValue.increment(25) });
-            logger.log(`Awarded 25 CloutCoin to user ${userId} for high-heat post.`);
-        }
-    }
-    return null;
-});
-*/
-
-// Tactical Order: "Create a scheduled function that runs once a day to generate a gossip post."
 export const gossipBot = onSchedule({ schedule: "every 24 hours" }, async (event) => {
     logger.info("Running Gossip Bot.");
     const usersRef = admin.firestore().collection("users");
