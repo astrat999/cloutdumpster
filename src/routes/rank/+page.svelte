@@ -1,10 +1,9 @@
 <script lang="ts">
-import type { PageData, ActionData } from './$types';
+import type { PageData } from './$types';
 import { enhance } from '$app/forms';
 
 // Tactical Order: "Define the props for the page data and action data."
 export let data: PageData;
-export let form: ActionData;
 
 // Destructure the combatants from the data prop for easier access.
 $: ({ combatant1, combatant2 } = data);

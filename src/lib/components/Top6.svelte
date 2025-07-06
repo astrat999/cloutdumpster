@@ -48,9 +48,10 @@
                 limit(10)
             );
             const snapshot = await getDocs(q);
+            const currentUserId = $user?.uid;
             searchResults = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(user => user.uid !== $user?.uid); // Don't show self
+                .map(doc => ({ id: doc.id, ...doc.data() as any }))
+                .filter((user: any) => user.uid !== currentUserId); // Don't show self
         } catch (error) {
             console.error('Error searching users:', error);
         } finally {
@@ -113,8 +114,7 @@
     onMount(loadTop6);
 
     $: if (searchQuery) {
-        const timeoutId = setTimeout(searchUsers, 300);
-        return () => clearTimeout(timeoutId);
+        searchUsers();
     }
 </script>
 

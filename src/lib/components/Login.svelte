@@ -127,7 +127,6 @@
     error = null;
     existingUser = false;
   }
-  }
 </script>
 
 <!-- Luxury Login Interface -->
