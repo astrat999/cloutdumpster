@@ -9,7 +9,7 @@
 
 	// Use profileUserId for component identification
 	$: componentId = `top6-${profileUserId}`;
-	
+
 	let top6Users: any[] = [];
 	let showAddModal = false;
 	let searchQuery = '';

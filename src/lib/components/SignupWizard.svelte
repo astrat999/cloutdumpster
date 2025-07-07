@@ -160,7 +160,7 @@
 			// Import FCM only when needed
 			const { getMessaging, getToken } = await import('firebase/messaging');
 			const messaging = getMessaging(app);
-			
+
 			const vapidKey = import.meta.env.VITE_VAPID_KEY;
 			if (!vapidKey) {
 				console.log('VAPID key not configured');

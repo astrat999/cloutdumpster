@@ -60,10 +60,10 @@ self.addEventListener('notificationclick', (event) => {
 // SW PUSH HANDLER: show notification, on click open /feed
 self.addEventListener('push', (e) => {
 	if (!e.data) return;
-	
+
 	const data = e.data.json();
 	const { title, body, icon = '/favicon.svg', tag = 'clout-notification' } = data;
-	
+
 	e.waitUntil(
 		self.registration.showNotification(title, {
 			body,
@@ -77,7 +77,7 @@ self.addEventListener('push', (e) => {
 
 self.addEventListener('notificationclick', (e) => {
 	e.notification.close();
-	
+
 	e.waitUntil(
 		self.clients.matchAll({ type: 'window' }).then((clientList) => {
 			// Check if there's already a window/tab open
