@@ -7,6 +7,8 @@
     import Top6 from '$lib/components/Top6.svelte';
     import DisplaySelector from '$lib/components/DisplaySelector.svelte';
     import Header from '$lib/components/Header.svelte';
+    import CritiqueModal from '$lib/components/CritiqueModal.svelte';
+    import CritiqueArchive from '$lib/components/CritiqueArchive.svelte';
 
     export let data: PageData;
     export let form: ActionData;
@@ -15,6 +17,18 @@
     $: profile = data.profile;
     $: whispers = data.whispers as any[];
     $: isOwnProfile = $user && $user.uid === profile.uid;
+
+    // Neural critique system state
+    let showCritiqueModal = false;
+    let showCritiqueArchive = false;
+
+    function openCritiqueModal() {
+        showCritiqueModal = true;
+    }
+
+    function openCritiqueArchive() {
+        showCritiqueArchive = true;
+    }
 </script>
 
 <Header />
@@ -152,5 +166,15 @@
                 ← Back to the Leaderboard
             </a>
         </div>
+
+        <!-- Critique Modal (Hidden by default) -->
+        {#if showCritiqueModal}
+            <CritiqueModal on:close={() => showCritiqueModal = false} />
+        {/if}
+
+        <!-- Critique Archive (Hidden by default) -->
+        {#if showCritiqueArchive}
+            <CritiqueArchive on:close={() => showCritiqueArchive = false} />
+        {/if}
     </div>
 </main>

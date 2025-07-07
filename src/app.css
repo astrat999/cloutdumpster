@@ -2,10 +2,16 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Tactical Theme Application */
+/* Neural Theme Foundation */
 html {
-    @apply bg-velvet;
+    @apply bg-void;
     font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+body {
+    @apply bg-gradient-to-br from-void via-velvet to-void;
+    min-height: 100vh;
 }
 
 /* Global Typography */
@@ -17,19 +23,83 @@ html {
     font-family: 'Inter', sans-serif;
 }
 
-/* Custom Scrollbar */
+.font-mono {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+/* Neural Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-velvet;
+    @apply bg-void;
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-royal rounded-full;
+    @apply bg-gradient-to-b from-electric to-royal rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-purple-400;
+    @apply from-royal to-electric;
+}
+
+/* Neural Glow Effects */
+.text-glow {
+    text-shadow: 0 0 10px currentColor;
+}
+
+.neon-glow {
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor;
+}
+
+/* Neural Animations */
+@keyframes neural-pulse {
+    0%, 100% { 
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes data-flow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100vw); }
+}
+
+.neural-pulse {
+    animation: neural-pulse 2s ease-in-out infinite;
+}
+
+.data-flow {
+    animation: data-flow 3s linear infinite;
+}
+
+/* Neural Grid Background */
+.neural-grid {
+    background-image: 
+        linear-gradient(rgba(34, 211, 238, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 211, 238, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Selection highlighting */
+::selection {
+    @apply bg-electric text-black;
+}
+
+::-moz-selection {
+    @apply bg-electric text-black;
+}
+
+/* Focus states */
+*:focus {
+    outline: none;
+}
+
+*:focus-visible {
+    @apply ring-2 ring-electric ring-opacity-50;
 }
