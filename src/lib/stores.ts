@@ -20,22 +20,6 @@ export interface UserProfile {
 	votes?: number; // Total number of votes received
 }
 
-export interface Syndicate {
-	id: string;
-	name: string;
-	tag: string;
-	description: string;
-	treasury: number;
-	leaderId: string;
-	members: string[];
-	memberIds?: string[]; // alias for members for compatibility
-	boostAmount?: number;
-	totalCloutScore?: number;
-	memberCount?: number;
-	leaderName?: string;
-	createdAt?: string | { toDate(): Date };
-}
-
 import { writable } from 'svelte/store';
 import type { User } from 'firebase/auth';
 
