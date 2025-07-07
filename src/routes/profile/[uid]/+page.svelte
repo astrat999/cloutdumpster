@@ -1,34 +1,94 @@
 <script lang="ts">
-    import type { PageData, ActionData } from './$types';
-    import { user } from '$lib/stores';
-    import { enhance } from '$app/forms';
-    import { page } from '$app/stores';
-    import ProfileUploader from '$lib/components/ProfileUploader.svelte';
-    import Top6 from '$lib/components/Top6.svelte';
-    import DisplaySelector from '$lib/components/DisplaySelector.svelte';
-    import Header from '$lib/components/Header.svelte';
-    import CritiqueModal from '$lib/components/CritiqueModal.svelte';
-    import CritiqueArchive from '$lib/components/CritiqueArchive.svelte';
+  import type { PageData, ActionData } from './$types';
+  import { user } from '$lib/stores';
+  import { enhance } from '$app/forms';
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
+  import { db, storage } from '$lib/firebase';
+  import { doc, collection, query, orderBy, limit, getDocs, where, updateDoc } from 'firebase/firestore';
+  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+  
+  export let data: PageData;
+  export let form: ActionData;
 
-    export let data: PageData;
-    export let form: ActionData;
+  $: profile = data.profile;
+  $: whispers = data.whispers as any[];
+  $: isOwnProfile = $user && $user.uid === profile.uid;
 
-    // Reactive statements to keep data fresh
-    $: profile = data.profile;
-    $: whispers = data.whispers as any[];
-    $: isOwnProfile = $user && $user.uid === profile.uid;
+  let recentVotes: any[] = [];
+  let showPhotoUpload = false;
+  let uploadingPhoto = false;
+  let fileInput: HTMLInputElement;
 
-    // Neural critique system state
-    let showCritiqueModal = false;
-    let showCritiqueArchive = false;
-
-    function openCritiqueModal() {
-        showCritiqueModal = true;
+  onMount(async () => {
+    if (isOwnProfile) {
+      await loadRecentVotes();
     }
+  });
 
-    function openCritiqueArchive() {
-        showCritiqueArchive = true;
+  async function loadRecentVotes() {
+    if (!$user) return;
+    
+    try {
+      const votesQuery = query(
+        collection(db, 'votes'),
+        where('voterId', '==', $user.uid),
+        orderBy('createdAt', 'desc'),
+        limit(5)
+      );
+      const snapshot = await getDocs(votesQuery);
+      recentVotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error('Error loading recent votes:', error);
     }
+  }
+
+  function openPhotoUpload() {
+    fileInput.click();
+  }
+
+  async function handlePhotoUpload(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    
+    if (!file || !$user) return;
+    
+    uploadingPhoto = true;
+    
+    try {
+      // Upload to Firebase Storage
+      const avatarRef = ref(storage, `avatars/${$user.uid}/avatar.jpg`);
+      await uploadBytes(avatarRef, file);
+      const photoURL = await getDownloadURL(avatarRef);
+      
+      // Update user profile
+      const userRef = doc(db, 'users', $user.uid);
+      await updateDoc(userRef, { photoURL });
+      
+      // Update local profile data
+      profile.photoURL = photoURL;
+      
+    } catch (error) {
+      console.error('Photo upload failed:', error);
+    } finally {
+      uploadingPhoto = false;
+    }
+  }
+
+  function formatTimeAgo(timestamp: any) {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (minutes < 1) return 'now';
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    return `${days}d`;
+  }
 </script>
 
 <Header />

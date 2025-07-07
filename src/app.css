@@ -2,21 +2,22 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Neural Theme Foundation */
+/* Minimal Aggressive Theme Foundation */
 html {
-    @apply bg-void;
+    @apply bg-black;
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
 }
 
 body {
-    @apply bg-gradient-to-br from-void via-velvet to-void;
+    @apply bg-black text-white;
     min-height: 100vh;
+    line-height: 1.6;
 }
 
 /* Global Typography */
 .font-display {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Inter', sans-serif;
 }
 
 .font-body {
@@ -27,72 +28,30 @@ body {
     font-family: 'JetBrains Mono', 'Consolas', monospace;
 }
 
-/* Neural Scrollbar */
+/* Aggressive Scrollbar */
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-void;
+    @apply bg-black;
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-gradient-to-b from-electric to-royal rounded-full;
+    @apply bg-accent rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply from-royal to-electric;
-}
-
-/* Neural Glow Effects */
-.text-glow {
-    text-shadow: 0 0 10px currentColor;
-}
-
-.neon-glow {
-    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor;
-}
-
-/* Neural Animations */
-@keyframes neural-pulse {
-    0%, 100% { 
-        opacity: 0.8;
-        transform: scale(1);
-    }
-    50% { 
-        opacity: 1;
-        transform: scale(1.05);
-    }
-}
-
-@keyframes data-flow {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100vw); }
-}
-
-.neural-pulse {
-    animation: neural-pulse 2s ease-in-out infinite;
-}
-
-.data-flow {
-    animation: data-flow 3s linear infinite;
-}
-
-/* Neural Grid Background */
-.neural-grid {
-    background-image: 
-        linear-gradient(rgba(34, 211, 238, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(34, 211, 238, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
+    @apply bg-pink-600;
 }
 
 /* Selection highlighting */
 ::selection {
-    @apply bg-electric text-black;
+    @apply bg-accent text-black;
 }
 
 ::-moz-selection {
-    @apply bg-electric text-black;
+    @apply bg-accent text-black;
 }
 
 /* Focus states */
@@ -101,5 +60,58 @@ body {
 }
 
 *:focus-visible {
-    @apply ring-2 ring-electric ring-opacity-50;
+    @apply ring-2 ring-accent ring-opacity-50;
+}
+
+/* Button styles */
+.btn-primary {
+    @apply bg-gradient-to-r from-accent to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105;
+}
+
+/* Card styles */
+.card {
+    @apply bg-card rounded-2xl border border-gray-800 p-6;
+}
+
+/* Input styles */
+input, textarea {
+    @apply bg-card border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-accent focus:outline-none;
+}
+
+/* Glassmorphism effect */
+.glass {
+    backdrop-filter: blur(16px);
+    background: rgba(17, 17, 17, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Aggressive animations */
+@keyframes aggressive-pulse {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aggressive-pulse {
+    animation: aggressive-pulse 1.5s ease-in-out infinite;
+}
+
+.slide-up {
+    animation: slide-up 0.5s ease-out;
 }

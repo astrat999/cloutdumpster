@@ -1,13 +1,17 @@
 <script lang="ts">
-import type { PageData } from './$types';
-import { enhance } from '$app/forms';
-
-// Tactical Order: "Define the props for the page data and action data."
-export let data: PageData;
-
-// Destructure the combatants from the data prop for easier access.
-$: ({ combatant1, combatant2 } = data);
+  import HotStrip from '$lib/components/HotStrip.svelte';
+  import Header from '$lib/components/Header.svelte';
 </script>
+
+<svelte:head>
+  <title>Hot or Not - CloutDumpster</title>
+</svelte:head>
+
+<Header />
+
+<main class="pt-20">
+  <HotStrip />
+</main>
 
 <main class="flex flex-col items-center justify-center min-h-screen p-4 bg-base-300">
     <div class="text-center mb-10">

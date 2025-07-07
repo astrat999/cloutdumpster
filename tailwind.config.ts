@@ -6,29 +6,27 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				'display': ['Playfair Display', 'serif'],
+				'display': ['Inter', 'sans-serif'],
 				'body': ['Inter', 'sans-serif'],
 				'mono': ['JetBrains Mono', 'Consolas', 'monospace']
 			},
 			colors: {
-				// Core Neon Noir Palette
+				// Minimal aggressive palette
+				'accent': '#FF2F6E',     // Hot pink primary
+				'text': '#EEEEEE',      // Light text
+				'card': '#111111',      // Dark cards
+				
+				// Legacy colors for compatibility
 				'royal': '#8B5CF6',      // Deep purple primary
 				'electric': '#22D3EE',   // Cyan electric blue
 				'gold': '#FBBF24',       // Rich gold accent
 				'velvet': '#1a1625',     // Dark purple base
 				'silk': '#2d2438',       // Medium purple
-				
-				// Extended Neon Noir Palette
 				'neon-pink': '#FF6B9D',  // Hot pink accent
 				'cyber-green': '#00FF94', // Matrix green
 				'void': '#0B0A0F',       // Deepest black
 				'plasma': '#B794F6',     // Light purple
 				'chrome': '#E5E7EB',     // Light gray chrome
-				
-				// Neural gradients
-				'neural-start': '#8B5CF6',
-				'neural-mid': '#22D3EE', 
-				'neural-end': '#FBBF24'
 			},
 			animation: {
 				'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -42,7 +40,7 @@ export default {
 					'50%': { transform: 'translateY(-10px)' }
 				},
 				glow: {
-					'from': { textShadow: '0 0 5px #22D3EE, 0 0 10px #22D3EE, 0 0 15px #22D3EE' },
+					'from': { textShadow: '0 0 5px #FF2F6E, 0 0 10px #FF2F6E, 0 0 15px #FF2F6E' },
 					'to': { textShadow: '0 0 10px #8B5CF6, 0 0 20px #8B5CF6, 0 0 30px #8B5CF6' }
 				},
 				drift: {
@@ -56,9 +54,7 @@ export default {
 				'xs': '2px',
 			},
 			boxShadow: {
-				'neon': '0 0 5px theme(colors.electric), 0 0 20px theme(colors.electric), 0 0 35px theme(colors.electric)',
-				'neon-royal': '0 0 5px theme(colors.royal), 0 0 20px theme(colors.royal), 0 0 35px theme(colors.royal)',
-				'neon-gold': '0 0 5px theme(colors.gold), 0 0 20px theme(colors.gold), 0 0 35px theme(colors.gold)',
+				'neon': '0 0 5px theme(colors.accent), 0 0 20px theme(colors.accent), 0 0 35px theme(colors.accent)',
 			}
 		}
 	},
@@ -68,18 +64,18 @@ export default {
 	daisyui: {
 		themes: [
 			{
-				neonoir: {
-					"primary": "#8B5CF6",
-					"secondary": "#22D3EE", 
-					"accent": "#FBBF24",
-					"neutral": "#1a1625",
-					"base-100": "#0B0A0F",
-					"base-200": "#1a1625",
-					"base-300": "#2d2438",
+				minimal: {
+					"primary": "#FF2F6E",
+					"secondary": "#111111", 
+					"accent": "#EEEEEE",
+					"neutral": "#000000",
+					"base-100": "#000000",
+					"base-200": "#111111",
+					"base-300": "#222222",
 					"info": "#22D3EE",
 					"success": "#00FF94",
 					"warning": "#FBBF24",
-					"error": "#FF6B9D",
+					"error": "#FF2F6E",
 				}
 			}
 		]
