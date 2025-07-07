@@ -121,13 +121,17 @@
 				const sy = (img.height - minDim) / 2;
 
 				ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-				canvas.toBlob((blob) => {
-					if (blob) {
-						resolve(blob);
-					} else {
-						reject(new Error('Failed to create blob'));
-					}
-				}, 'image/jpeg', 0.8);
+				canvas.toBlob(
+					(blob) => {
+						if (blob) {
+							resolve(blob);
+						} else {
+							reject(new Error('Failed to create blob'));
+						}
+					},
+					'image/jpeg',
+					0.8
+				);
 			};
 
 			img.onerror = () => reject(new Error('Failed to load image'));

@@ -5,7 +5,7 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	
+
 	// Get combatants from the data (assuming it's provided by the load function)
 	$: combatant1 = data.combatant1 || { username: 'Loading...', cloutScore: 0, uid: '' };
 	$: combatant2 = data.combatant2 || { username: 'Loading...', cloutScore: 0, uid: '' };

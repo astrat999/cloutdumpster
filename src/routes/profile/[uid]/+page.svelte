@@ -16,7 +16,7 @@
 		updateDoc
 	} from 'firebase/firestore';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-	
+
 	// Import components
 	import Header from '$lib/components/Header.svelte';
 	import Top6 from '$lib/components/Top6.svelte';
@@ -261,19 +261,16 @@
 
 		<!-- Critique Modal (Hidden by default) -->
 		{#if showCritiqueModal}
-			<CritiqueModal 
+			<CritiqueModal
 				targetUserId={profile.uid}
 				targetUsername={profile.username}
-				on:close={() => (showCritiqueModal = false)} 
+				on:close={() => (showCritiqueModal = false)}
 			/>
 		{/if}
 
 		<!-- Critique Archive (Hidden by default) -->
 		{#if showCritiqueArchive}
-			<CritiqueArchive 
-				userId={profile.uid}
-				on:close={() => (showCritiqueArchive = false)} 
-			/>
+			<CritiqueArchive userId={profile.uid} on:close={() => (showCritiqueArchive = false)} />
 		{/if}
 	</div>
 </main>

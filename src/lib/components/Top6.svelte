@@ -7,6 +7,9 @@
 	export let isOwnProfile: boolean = false;
 	export let profileUserId: string;
 
+	// Use profileUserId for component identification
+	$: componentId = `top6-${profileUserId}`;
+	
 	let top6Users: any[] = [];
 	let showAddModal = false;
 	let searchQuery = '';
@@ -123,6 +126,7 @@
 		<h3 class="font-display text-2xl font-bold text-white">Inner Circle</h3>
 		{#if isOwnProfile}
 			<button
+				aria-label="Add to Inner Circle"
 				class="text-royal transition-colors hover:text-purple-400"
 				on:click={() => (showAddModal = true)}
 			>
@@ -199,6 +203,7 @@
 
 					{#if isOwnProfile}
 						<button
+							aria-label="Remove from Inner Circle"
 							class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 opacity-0 transition-opacity group-hover:opacity-100"
 							on:click={() => removeFromTop6(top6Users[index].uid)}
 						>
@@ -216,6 +221,7 @@
 					<!-- Empty Slot -->
 					{#if isOwnProfile}
 						<button
+							aria-label="Add to Inner Circle"
 							class="flex h-full w-full items-center justify-center text-gray-500 transition-colors hover:text-royal"
 							on:click={() => (showAddModal = true)}
 						>
@@ -253,6 +259,7 @@
 			<div class="mb-4 flex items-center justify-between">
 				<h3 class="font-display text-xl font-bold text-white">Add to Inner Circle</h3>
 				<button
+					aria-label="Close modal"
 					class="text-gray-400 hover:text-white"
 					on:click={() => {
 						showAddModal = false;
