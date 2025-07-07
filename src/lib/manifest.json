@@ -1,17 +1,17 @@
 {
-    "name": "CloutDumpster",
-    "short_name": "CloutDumpster",
-    "description": "Your reputation is garbage. Embrace it.",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#1D232A",
-    "theme_color": "#F472B6",
-    "icons": [
-        {
-            "src": "/favicon.svg",
-            "sizes": "any",
-            "type": "image/svg+xml",
-            "purpose": "any maskable"
-        }
-    ]
+	"name": "CloutDumpster",
+	"short_name": "CloutDumpster",
+	"description": "Your reputation is garbage. Embrace it.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#1D232A",
+	"theme_color": "#F472B6",
+	"icons": [
+		{
+			"src": "/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any maskable"
+		}
+	]
 }

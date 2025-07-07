@@ -22,7 +22,6 @@
   let lastDoc: any = null;
   let hasMore = true;
   let intersectionObserver: IntersectionObserver | null = null;
-  let sentinelElement: HTMLElement;
 
   $: currentUser = users[currentIndex];
 
@@ -102,10 +101,6 @@
       },
       { threshold: 0.1 }
     );
-
-    if (sentinelElement) {
-      intersectionObserver.observe(sentinelElement);
-    }
   }
 
   function setupKeyboardNavigation() {
@@ -136,7 +131,7 @@
     try {
       // Record the vote
       await updateDoc(doc(db, 'users', currentUser.id), {
-        cloutScore: increment(type),
+        cloutScore: increment(type * 10), // Each vote is worth 10 points
         votes: increment(1)
       });
 
@@ -177,92 +172,14 @@
   function goToProfile(userId: string) {
     goto(`/profile/${userId}`);
   }
-</script>
-        where('photoURL', '!=', ''), // Only users with photos
-        orderBy('photoURL'), // Required for != filter
-        orderBy('cloutScore', 'desc'),
-        limit(20)
-      );
-      
-      if (loadMore && lastDoc) {
-        usersQuery = query(usersQuery, startAfter(lastDoc));
-      }
-      
-      const snapshot = await getDocs(usersQuery);
-      
-      if (snapshot.empty) {
-        hasMore = false;
-        loading = false;
-        return;
-      }
-      
-      const newUsers = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() } as HotUser))
-        .filter(user => user.id !== $user?.uid); // Don't show current user
-      
-      if (loadMore) {
-        users = [...users, ...newUsers];
-      } else {
-        users = newUsers;
-      }
-      
-      lastDoc = snapshot.docs[snapshot.docs.length - 1];
-      hasMore = snapshot.docs.length === 20;
-      
-    } catch (error) {
-      console.error('Error loading users:', error);
-    } finally {
-      loading = false;
-    }
-  }
-
-  // Setup intersection observer for infinite scroll
-  function setupInfiniteScroll() {
-    intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMore && !loading) {
-            loadUsers(true);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-  }
-  // END user loading with pagination
-
-  async function vote(userId: string, value: 1 | -1) {
-    if (voting || !$user) return;
-    
-    voting = true;
-    try {
-      // Update the user's clout score
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, {
-        cloutScore: increment(value * 10), // Each vote is worth 10 points
-        votes: increment(1)
-      });
-
-      // Move to next user
-      if (currentIndex < users.length - 1) {
-        currentIndex++;
-      } else {
-        // Reload more users when we reach the end
-        await loadUsers();
-        currentIndex = 0;
-      }
-    } catch (error) {
-      console.error('Error voting:', error);
-    } finally {
-      voting = false;
-    }
-  }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'ArrowLeft') {
-      vote(currentUser.id, -1);
-    } else if (event.key === 'ArrowRight') {
-      vote(currentUser.id, 1);
+    if (event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') {
+      event.preventDefault();
+      vote(1); // Hot
+    } else if (event.key === 'ArrowDown' || event.key === 's' || event.key === 'S') {
+      event.preventDefault();
+      vote(-1); // Not
     }
   }
 </script>
@@ -311,14 +228,14 @@
           <div class="absolute inset-0 flex items-end justify-center pb-8 opacity-0 group-hover:opacity-100 transition-opacity">
             <div class="flex space-x-6">
               <button
-                on:click={() => vote(currentUser.id, -1)}
+                on:click={() => vote(-1)}
                 disabled={voting}
                 class="w-16 h-16 bg-red-500/80 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl hover:bg-red-500 transition-colors disabled:opacity-50"
               >
                 👎
               </button>
               <button
-                on:click={() => vote(currentUser.id, 1)}
+                on:click={() => vote(1)}
                 disabled={voting}
                 class="w-16 h-16 bg-green-500/80 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl hover:bg-green-500 transition-colors disabled:opacity-50"
               >
@@ -332,7 +249,7 @@
       <!-- Vote buttons (always visible on mobile) -->
       <div class="flex space-x-4 mb-8 md:hidden">
         <button
-          on:click={() => vote(currentUser.id, -1)}
+          on:click={() => vote(-1)}
           disabled={voting}
           class="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-4 rounded-2xl flex items-center justify-center space-x-2 transition-colors"
         >
@@ -340,7 +257,7 @@
           <span>Not Hot</span>
         </button>
         <button
-          on:click={() => vote(currentUser.id, 1)}
+          on:click={() => vote(1)}
           disabled={voting}
           class="flex-1 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold py-4 rounded-2xl flex items-center justify-center space-x-2 transition-colors"
         >

@@ -1,312 +1,346 @@
 <script lang="ts">
-    import { db } from '$lib/firebase';
-    import { user, userProfile } from '$lib/stores';
-    import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
-    import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
-    import Header from '$lib/components/Header.svelte';
+	import { db } from '$lib/firebase';
+	import { user, userProfile } from '$lib/stores';
+	import {
+		collection,
+		addDoc,
+		doc,
+		updateDoc,
+		query,
+		where,
+		getDocs,
+		serverTimestamp
+	} from 'firebase/firestore';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import Header from '$lib/components/Header.svelte';
 
-    let name = '';
-    let tag = '';
-    let description = '';
-    let isLoading = false;
-    let error = '';
-    let success = false;
+	let name = '';
+	let tag = '';
+	let description = '';
+	let isLoading = false;
+	let error = '';
+	let success = false;
 
-    const CREATION_FEE = 1000; // CloutCoin™ required to create a Syndicate
+	const CREATION_FEE = 1000; // CloutCoin™ required to create a Syndicate
 
-    onMount(() => {
-        if (!$user) {
-            goto('/');
-        }
-    });
+	onMount(() => {
+		if (!$user) {
+			goto('/');
+		}
+	});
 
-    // Validate tag format (3-4 uppercase letters)
-    function validateTag(value: string): boolean {
-        return /^[A-Z]{3,4}$/.test(value);
-    }
+	// Validate tag format (3-4 uppercase letters)
+	function validateTag(value: string): boolean {
+		return /^[A-Z]{3,4}$/.test(value);
+	}
 
-    // Check if syndicate name or tag already exists
-    async function checkUniqueness(): Promise<boolean> {
-        try {
-            const nameQuery = query(collection(db, 'syndicates'), where('name', '==', name));
-            const tagQuery = query(collection(db, 'syndicates'), where('tag', '==', tag.toUpperCase()));
-            
-            const [nameSnapshot, tagSnapshot] = await Promise.all([
-                getDocs(nameQuery),
-                getDocs(tagQuery)
-            ]);
+	// Check if syndicate name or tag already exists
+	async function checkUniqueness(): Promise<boolean> {
+		try {
+			const nameQuery = query(collection(db, 'syndicates'), where('name', '==', name));
+			const tagQuery = query(collection(db, 'syndicates'), where('tag', '==', tag.toUpperCase()));
 
-            if (!nameSnapshot.empty) {
-                error = 'Syndicate name already taken. Choose something more original.';
-                return false;
-            }
+			const [nameSnapshot, tagSnapshot] = await Promise.all([
+				getDocs(nameQuery),
+				getDocs(tagQuery)
+			]);
 
-            if (!tagSnapshot.empty) {
-                error = 'Tag already claimed. Your originality is lacking.';
-                return false;
-            }
+			if (!nameSnapshot.empty) {
+				error = 'Syndicate name already taken. Choose something more original.';
+				return false;
+			}
 
-            return true;
-        } catch (e) {
-            error = 'Failed to verify uniqueness. The server is judging you.';
-            return false;
-        }
-    }
+			if (!tagSnapshot.empty) {
+				error = 'Tag already claimed. Your originality is lacking.';
+				return false;
+			}
 
-    async function createSyndicate() {
-        if (!$user || !$userProfile) {
-            error = 'You must be logged in to create a Syndicate.';
-            return;
-        }
+			return true;
+		} catch (e) {
+			error = 'Failed to verify uniqueness. The server is judging you.';
+			return false;
+		}
+	}
 
-        // Validation
-        if (!name.trim() || !tag.trim() || !description.trim()) {
-            error = 'All fields are required. Attention to detail matters.';
-            return;
-        }
+	async function createSyndicate() {
+		if (!$user || !$userProfile) {
+			error = 'You must be logged in to create a Syndicate.';
+			return;
+		}
 
-        if (name.length < 3 || name.length > 50) {
-            error = 'Syndicate name must be 3-50 characters long.';
-            return;
-        }
+		// Validation
+		if (!name.trim() || !tag.trim() || !description.trim()) {
+			error = 'All fields are required. Attention to detail matters.';
+			return;
+		}
 
-        if (!validateTag(tag)) {
-            error = 'Tag must be 3-4 uppercase letters only (e.g., CD, CLOUT).';
-            return;
-        }
+		if (name.length < 3 || name.length > 50) {
+			error = 'Syndicate name must be 3-50 characters long.';
+			return;
+		}
 
-        if (description.length < 10 || description.length > 200) {
-            error = 'Description must be 10-200 characters long.';
-            return;
-        }
+		if (!validateTag(tag)) {
+			error = 'Tag must be 3-4 uppercase letters only (e.g., CD, CLOUT).';
+			return;
+		}
 
-        // Check if user has enough CloutCoin™
-        if (($userProfile.cloutCoin || 0) < CREATION_FEE) {
-            error = `Insufficient funds. You need ${CREATION_FEE} CloutCoin™ to create a Syndicate.`;
-            return;
-        }
+		if (description.length < 10 || description.length > 200) {
+			error = 'Description must be 10-200 characters long.';
+			return;
+		}
 
-        isLoading = true;
-        error = '';
+		// Check if user has enough CloutCoin™
+		if (($userProfile.cloutCoin || 0) < CREATION_FEE) {
+			error = `Insufficient funds. You need ${CREATION_FEE} CloutCoin™ to create a Syndicate.`;
+			return;
+		}
 
-        try {
-            // Check uniqueness
-            if (!(await checkUniqueness())) {
-                isLoading = false;
-                return;
-            }
+		isLoading = true;
+		error = '';
 
-            // Create the Syndicate
-            const syndicateData = {
-                name: name.trim(),
-                tag: tag.toUpperCase(),
-                leaderId: $user.uid,
-                memberIds: [$user.uid], // Leader is the first member
-                treasury: 0,
-                description: description.trim(),
-                createdAt: serverTimestamp()
-            };
+		try {
+			// Check uniqueness
+			if (!(await checkUniqueness())) {
+				isLoading = false;
+				return;
+			}
 
-            const syndicateDoc = await addDoc(collection(db, 'syndicates'), syndicateData);
+			// Create the Syndicate
+			const syndicateData = {
+				name: name.trim(),
+				tag: tag.toUpperCase(),
+				leaderId: $user.uid,
+				memberIds: [$user.uid], // Leader is the first member
+				treasury: 0,
+				description: description.trim(),
+				createdAt: serverTimestamp()
+			};
 
-            // Deduct the creation fee from user's balance
-            const userRef = doc(db, 'users', $user.uid);
-            await updateDoc(userRef, {
-                cloutCoin: ($userProfile.cloutCoin || 0) - CREATION_FEE
-            });
+			const syndicateDoc = await addDoc(collection(db, 'syndicates'), syndicateData);
 
-            // Update local store
-            $userProfile.cloutCoin = ($userProfile.cloutCoin || 0) - CREATION_FEE;
-            userProfile.set($userProfile);
+			// Deduct the creation fee from user's balance
+			const userRef = doc(db, 'users', $user.uid);
+			await updateDoc(userRef, {
+				cloutCoin: ($userProfile.cloutCoin || 0) - CREATION_FEE
+			});
 
-            success = true;
-            
-            // Redirect to the new Syndicate page after a delay
-            setTimeout(() => {
-                goto(`/syndicates/${syndicateDoc.id}`);
-            }, 2000);
+			// Update local store
+			$userProfile.cloutCoin = ($userProfile.cloutCoin || 0) - CREATION_FEE;
+			userProfile.set($userProfile);
 
-        } catch (e) {
-            console.error('Syndicate creation failed:', e);
-            error = 'Creation failed. The server rejected your power grab.';
-        } finally {
-            isLoading = false;
-        }
-    }
+			success = true;
 
-    // Auto-format tag as user types
-    $: if (tag) {
-        tag = tag.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
-    }
+			// Redirect to the new Syndicate page after a delay
+			setTimeout(() => {
+				goto(`/syndicates/${syndicateDoc.id}`);
+			}, 2000);
+		} catch (e) {
+			console.error('Syndicate creation failed:', e);
+			error = 'Creation failed. The server rejected your power grab.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	// Auto-format tag as user types
+	$: if (tag) {
+		tag = tag
+			.toUpperCase()
+			.replace(/[^A-Z]/g, '')
+			.slice(0, 4);
+	}
 </script>
 
 <svelte:head>
-    <title>Create Syndicate - CloutDumpster</title>
+	<title>Create Syndicate - CloutDumpster</title>
 </svelte:head>
 
 <Header />
 
-<main class="pt-20 min-h-screen bg-velvet font-body">
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="font-display text-6xl font-bold text-white mb-4">Create Your Syndicate</h1>
-            <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-6">
-                Ascend from individual to <span class="text-gold font-semibold">Leader</span>. 
-                Build your empire, command loyalty, wield collective power.
-            </p>
-            
-            <!-- Cost Display -->
-            <div class="inline-flex items-center space-x-3 bg-royal/20 border border-royal/30 rounded-2xl px-8 py-4">
-                <span class="text-3xl">👑</span>
-                <div>
-                    <div class="text-gray-300 text-sm">Creation Fee</div>
-                    <div class="font-display text-2xl font-bold text-gold">{CREATION_FEE.toLocaleString()} CloutCoin™</div>
-                </div>
-            </div>
+<main class="min-h-screen bg-velvet pt-20 font-body">
+	<div class="mx-auto max-w-4xl px-4 py-8">
+		<!-- Header -->
+		<div class="mb-12 text-center">
+			<h1 class="mb-4 font-display text-6xl font-bold text-white">Create Your Syndicate</h1>
+			<p class="mx-auto mb-6 max-w-2xl text-xl text-gray-400">
+				Ascend from individual to <span class="font-semibold text-gold">Leader</span>. Build your
+				empire, command loyalty, wield collective power.
+			</p>
 
-            {#if $userProfile}
-                <div class="mt-4 text-center">
-                    <span class="text-gray-400">Your Balance: </span>
-                    <span class="font-display text-xl font-bold {($userProfile.cloutCoin || 0) >= CREATION_FEE ? 'text-gold' : 'text-red-400'}">
-                        {($userProfile.cloutCoin || 0).toLocaleString()} CloutCoin™
-                    </span>
-                </div>
-            {/if}
-        </div>
+			<!-- Cost Display -->
+			<div
+				class="inline-flex items-center space-x-3 rounded-2xl border border-royal/30 bg-royal/20 px-8 py-4"
+			>
+				<span class="text-3xl">👑</span>
+				<div>
+					<div class="text-sm text-gray-300">Creation Fee</div>
+					<div class="font-display text-2xl font-bold text-gold">
+						{CREATION_FEE.toLocaleString()} CloutCoin™
+					</div>
+				</div>
+			</div>
 
-        <!-- Success Message -->
-        {#if success}
-            <div class="mb-8 bg-green-500/20 border border-green-500/30 rounded-2xl p-8 text-center">
-                <div class="text-5xl mb-4">🏛️</div>
-                <h2 class="font-display text-3xl font-bold text-green-400 mb-4">Syndicate Created!</h2>
-                <p class="text-green-300 text-lg">Your empire has been founded. Redirecting to your new domain...</p>
-            </div>
-        {:else}
-            <!-- Creation Form -->
-            <div class="bg-silk/30 rounded-2xl border border-royal/20 p-8">
-                <div class="grid md:grid-cols-2 gap-8">
-                    <!-- Form Fields -->
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-white font-semibold mb-2">
-                                Syndicate Name
-                                <span class="text-red-400">*</span>
-                            </label>
-                            <input 
-                                type="text" 
-                                class="w-full bg-velvet/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-royal focus:outline-none transition-colors"
-                                placeholder="The Shadow Collective"
-                                bind:value={name}
-                                maxlength="50"
-                                disabled={isLoading || success}
-                            />
-                            <div class="text-gray-400 text-xs mt-1">{name.length}/50 characters</div>
-                        </div>
+			{#if $userProfile}
+				<div class="mt-4 text-center">
+					<span class="text-gray-400">Your Balance: </span>
+					<span
+						class="font-display text-xl font-bold {($userProfile.cloutCoin || 0) >= CREATION_FEE
+							? 'text-gold'
+							: 'text-red-400'}"
+					>
+						{($userProfile.cloutCoin || 0).toLocaleString()} CloutCoin™
+					</span>
+				</div>
+			{/if}
+		</div>
 
-                        <div>
-                            <label class="block text-white font-semibold mb-2">
-                                Tag (3-4 Letters)
-                                <span class="text-red-400">*</span>
-                            </label>
-                            <input 
-                                type="text" 
-                                class="w-full bg-velvet/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-royal focus:outline-none transition-colors font-mono text-lg"
-                                placeholder="TSC"
-                                bind:value={tag}
-                                maxlength="4"
-                                disabled={isLoading || success}
-                            />
-                            <div class="text-gray-400 text-xs mt-1">Will appear as [{tag || 'TAG'}] next to member names</div>
-                        </div>
+		<!-- Success Message -->
+		{#if success}
+			<div class="mb-8 rounded-2xl border border-green-500/30 bg-green-500/20 p-8 text-center">
+				<div class="mb-4 text-5xl">🏛️</div>
+				<h2 class="mb-4 font-display text-3xl font-bold text-green-400">Syndicate Created!</h2>
+				<p class="text-lg text-green-300">
+					Your empire has been founded. Redirecting to your new domain...
+				</p>
+			</div>
+		{:else}
+			<!-- Creation Form -->
+			<div class="rounded-2xl border border-royal/20 bg-silk/30 p-8">
+				<div class="grid gap-8 md:grid-cols-2">
+					<!-- Form Fields -->
+					<div class="space-y-6">
+						<div>
+							<label class="mb-2 block font-semibold text-white">
+								Syndicate Name
+								<span class="text-red-400">*</span>
+							</label>
+							<input
+								type="text"
+								class="w-full rounded-xl border border-gray-600 bg-velvet/50 px-4 py-3 text-white placeholder-gray-400 transition-colors focus:border-royal focus:outline-none"
+								placeholder="The Shadow Collective"
+								bind:value={name}
+								maxlength="50"
+								disabled={isLoading || success}
+							/>
+							<div class="mt-1 text-xs text-gray-400">{name.length}/50 characters</div>
+						</div>
 
-                        <div>
-                            <label class="block text-white font-semibold mb-2">
-                                Description
-                                <span class="text-red-400">*</span>
-                            </label>
-                            <textarea 
-                                class="w-full bg-velvet/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-royal focus:outline-none transition-colors resize-none"
-                                placeholder="We control the narrative. We shape the meta. We are inevitable."
-                                rows="4"
-                                bind:value={description}
-                                maxlength="200"
-                                disabled={isLoading || success}
-                            ></textarea>
-                            <div class="text-gray-400 text-xs mt-1">{description.length}/200 characters</div>
-                        </div>
-                    </div>
+						<div>
+							<label class="mb-2 block font-semibold text-white">
+								Tag (3-4 Letters)
+								<span class="text-red-400">*</span>
+							</label>
+							<input
+								type="text"
+								class="w-full rounded-xl border border-gray-600 bg-velvet/50 px-4 py-3 font-mono text-lg text-white placeholder-gray-400 transition-colors focus:border-royal focus:outline-none"
+								placeholder="TSC"
+								bind:value={tag}
+								maxlength="4"
+								disabled={isLoading || success}
+							/>
+							<div class="mt-1 text-xs text-gray-400">
+								Will appear as [{tag || 'TAG'}] next to member names
+							</div>
+						</div>
 
-                    <!-- Preview Card -->
-                    <div class="bg-velvet/50 rounded-xl p-6 border border-royal/10">
-                        <h3 class="font-display text-xl font-bold text-white mb-4">Syndicate Preview</h3>
-                        
-                        <div class="bg-silk/30 rounded-xl p-4 border border-royal/20">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-12 h-12 bg-gradient-to-br from-royal to-purple-700 rounded-lg flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{tag || '??'}</span>
-                                </div>
-                                <div>
-                                    <h4 class="font-display text-lg font-bold text-white">
-                                        {name || 'Syndicate Name'}
-                                    </h4>
-                                    <div class="text-gray-400 text-sm">Founded by {$userProfile?.username || 'You'}</div>
-                                </div>
-                            </div>
-                            
-                            <p class="text-gray-300 text-sm mb-4">
-                                {description || 'Your syndicate description will appear here...'}
-                            </p>
-                            
-                            <div class="grid grid-cols-3 gap-2 text-center">
-                                <div>
-                                    <div class="text-gold font-bold">1</div>
-                                    <div class="text-gray-400 text-xs">Members</div>
-                                </div>
-                                <div>
-                                    <div class="text-electric font-bold">0</div>
-                                    <div class="text-gray-400 text-xs">Treasury</div>
-                                </div>
-                                <div>
-                                    <div class="text-white font-bold">{$userProfile?.cloutScore || 0}</div>
-                                    <div class="text-gray-400 text-xs">Total Clout</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+						<div>
+							<label class="mb-2 block font-semibold text-white">
+								Description
+								<span class="text-red-400">*</span>
+							</label>
+							<textarea
+								class="w-full resize-none rounded-xl border border-gray-600 bg-velvet/50 px-4 py-3 text-white placeholder-gray-400 transition-colors focus:border-royal focus:outline-none"
+								placeholder="We control the narrative. We shape the meta. We are inevitable."
+								rows="4"
+								bind:value={description}
+								maxlength="200"
+								disabled={isLoading || success}
+							></textarea>
+							<div class="mt-1 text-xs text-gray-400">{description.length}/200 characters</div>
+						</div>
+					</div>
 
-                <!-- Error Display -->
-                {#if error}
-                    <div class="mt-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
-                        <p class="text-red-400 text-center">{error}</p>
-                    </div>
-                {/if}
+					<!-- Preview Card -->
+					<div class="rounded-xl border border-royal/10 bg-velvet/50 p-6">
+						<h3 class="mb-4 font-display text-xl font-bold text-white">Syndicate Preview</h3>
 
-                <!-- Submit Button -->
-                <div class="mt-8 text-center">
-                    <button 
-                        class="bg-gradient-to-r from-royal to-purple-600 text-white font-bold py-4 px-12 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-3 mx-auto" 
-                        on:click={createSyndicate}
-                        disabled={isLoading || success || !$userProfile || ($userProfile.cloutCoin || 0) < CREATION_FEE}
-                    >
-                        {#if isLoading}
-                            <div class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        {:else}
-                            <span class="text-2xl">👑</span>
-                        {/if}
-                        <span class="text-xl">Establish Syndicate</span>
-                        <span class="text-gold font-display">-{CREATION_FEE.toLocaleString()}</span>
-                    </button>
-                    
-                    {#if ($userProfile?.cloutCoin || 0) < CREATION_FEE}
-                        <p class="text-gray-400 text-sm mt-4">
-                            Insufficient funds. Visit the <a href="/store" class="text-gold hover:underline">Store</a> to acquire more CloutCoin™.
-                        </p>
-                    {/if}
-                </div>
-            </div>
-        {/if}
-    </div>
+						<div class="rounded-xl border border-royal/20 bg-silk/30 p-4">
+							<div class="mb-3 flex items-center space-x-3">
+								<div
+									class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-royal to-purple-700"
+								>
+									<span class="text-sm font-bold text-white">{tag || '??'}</span>
+								</div>
+								<div>
+									<h4 class="font-display text-lg font-bold text-white">
+										{name || 'Syndicate Name'}
+									</h4>
+									<div class="text-sm text-gray-400">
+										Founded by {$userProfile?.username || 'You'}
+									</div>
+								</div>
+							</div>
+
+							<p class="mb-4 text-sm text-gray-300">
+								{description || 'Your syndicate description will appear here...'}
+							</p>
+
+							<div class="grid grid-cols-3 gap-2 text-center">
+								<div>
+									<div class="font-bold text-gold">1</div>
+									<div class="text-xs text-gray-400">Members</div>
+								</div>
+								<div>
+									<div class="font-bold text-electric">0</div>
+									<div class="text-xs text-gray-400">Treasury</div>
+								</div>
+								<div>
+									<div class="font-bold text-white">{$userProfile?.cloutScore || 0}</div>
+									<div class="text-xs text-gray-400">Total Clout</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Error Display -->
+				{#if error}
+					<div class="mt-6 rounded-xl border border-red-500/30 bg-red-500/20 p-4">
+						<p class="text-center text-red-400">{error}</p>
+					</div>
+				{/if}
+
+				<!-- Submit Button -->
+				<div class="mt-8 text-center">
+					<button
+						class="mx-auto flex items-center justify-center space-x-3 rounded-xl bg-gradient-to-r from-royal to-purple-600 px-12 py-4 font-bold text-white transition-all duration-200 hover:from-purple-600 hover:to-purple-700 disabled:opacity-50"
+						on:click={createSyndicate}
+						disabled={isLoading ||
+							success ||
+							!$userProfile ||
+							($userProfile.cloutCoin || 0) < CREATION_FEE}
+					>
+						{#if isLoading}
+							<div
+								class="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white"
+							></div>
+						{:else}
+							<span class="text-2xl">👑</span>
+						{/if}
+						<span class="text-xl">Establish Syndicate</span>
+						<span class="font-display text-gold">-{CREATION_FEE.toLocaleString()}</span>
+					</button>
+
+					{#if ($userProfile?.cloutCoin || 0) < CREATION_FEE}
+						<p class="mt-4 text-sm text-gray-400">
+							Insufficient funds. Visit the <a href="/store" class="text-gold hover:underline"
+								>Store</a
+							> to acquire more CloutCoin™.
+						</p>
+					{/if}
+				</div>
+			</div>
+		{/if}
+	</div>
 </main>

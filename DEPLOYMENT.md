@@ -7,25 +7,28 @@ Go to your GitHub repo → Settings → Secrets and variables → Actions → Ne
 Add these secrets for automated deployment:
 
 ### Netlify Configuration
-| Secret Name | Value | Where to find it |
-|-------------|-------|------------------|
+
+| Secret Name          | Value                      | Where to find it                                                |
+| -------------------- | -------------------------- | --------------------------------------------------------------- |
 | `NETLIFY_AUTH_TOKEN` | Your personal access token | Netlify → User Settings → Applications → Personal Access Tokens |
-| `NETLIFY_SITE_ID` | Your site API ID | Netlify → Site Settings → Site Details → API ID |
+| `NETLIFY_SITE_ID`    | Your site API ID           | Netlify → Site Settings → Site Details → API ID                 |
 
 ### Firebase Configuration (Public keys - safe for client-side)
-| Secret Name | Value | Where to find it |
-|-------------|-------|------------------|
-| `PUBLIC_FIREBASE_API_KEY` | Your Firebase API key | Firebase Console → Project Settings → Web App Config |
-| `PUBLIC_FIREBASE_AUTH_DOMAIN` | your-project.firebaseapp.com | Firebase Console → Project Settings → Web App Config |
-| `PUBLIC_FIREBASE_PROJECT_ID` | your-project-id | Firebase Console → Project Settings → General |
-| `PUBLIC_FIREBASE_STORAGE_BUCKET` | your-project.appspot.com | Firebase Console → Project Settings → Web App Config |
-| `PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Your sender ID | Firebase Console → Project Settings → Web App Config |
-| `PUBLIC_FIREBASE_APP_ID` | Your app ID | Firebase Console → Project Settings → Web App Config |
+
+| Secret Name                           | Value                        | Where to find it                                     |
+| ------------------------------------- | ---------------------------- | ---------------------------------------------------- |
+| `PUBLIC_FIREBASE_API_KEY`             | Your Firebase API key        | Firebase Console → Project Settings → Web App Config |
+| `PUBLIC_FIREBASE_AUTH_DOMAIN`         | your-project.firebaseapp.com | Firebase Console → Project Settings → Web App Config |
+| `PUBLIC_FIREBASE_PROJECT_ID`          | your-project-id              | Firebase Console → Project Settings → General        |
+| `PUBLIC_FIREBASE_STORAGE_BUCKET`      | your-project.appspot.com     | Firebase Console → Project Settings → Web App Config |
+| `PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Your sender ID               | Firebase Console → Project Settings → Web App Config |
+| `PUBLIC_FIREBASE_APP_ID`              | Your app ID                  | Firebase Console → Project Settings → Web App Config |
 
 ### Stripe Configuration
-| Secret Name | Value | Where to find it |
-|-------------|-------|------------------|
-| `PUBLIC_STRIPE_PK` | pk_test_... or pk_live_... | Stripe Dashboard → Developers → API Keys |
+
+| Secret Name        | Value                      | Where to find it                         |
+| ------------------ | -------------------------- | ---------------------------------------- |
+| `PUBLIC_STRIPE_PK` | pk*test*... or pk*live*... | Stripe Dashboard → Developers → API Keys |
 
 ## How to set up:
 

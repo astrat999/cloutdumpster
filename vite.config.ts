@@ -17,14 +17,14 @@ export default defineConfig({
 						handler: 'NetworkFirst',
 						options: {
 							cacheName: 'api-cache',
-							networkTimeoutSeconds: 5,
+							networkTimeoutSeconds: 5
 						}
 					},
 					{
 						urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
 						handler: 'CacheFirst',
 						options: {
-							cacheName: 'images',
+							cacheName: 'images'
 						}
 					}
 				]
