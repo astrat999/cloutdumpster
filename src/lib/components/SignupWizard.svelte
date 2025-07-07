@@ -1,9 +1,9 @@
 <!-- SIGNUP WIZARD: step 1 selfie upload with <input type="file" accept="image/*" capture="user">, auto-crop square thumbnail, upload to Firebase Storage, then step 2 handle+password form, save avatarURL & create Firebase auth user -->
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { auth, db, storage } from '$lib/firebase';
+	import { auth, db, storage, app } from '$lib/firebase';
 	import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-	import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+	import { doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 	import { createUserWithEmailAndPassword } from 'firebase/auth';
 	import { goto } from '$app/navigation';
 
@@ -94,6 +94,9 @@
 				lastActive: serverTimestamp()
 			});
 
+			// Subscribe to push notifications
+			subscribeToNotifications(userId);
+
 			// Success - redirect to feed
 			goto('/feed');
 		} catch (error: any) {
@@ -139,6 +142,41 @@
 		});
 	}
 	// END Firebase signup flow
+
+	// SUBSCRIBE TO PUSH AFTER SIGNUP
+	async function subscribeToNotifications(uid: string) {
+		try {
+			if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+				console.log('Push messaging is not supported');
+				return;
+			}
+
+			const permission = await Notification.requestPermission();
+			if (permission !== 'granted') {
+				console.log('Notification permission denied');
+				return;
+			}
+
+			// Import FCM only when needed
+			const { getMessaging, getToken } = await import('firebase/messaging');
+			const messaging = getMessaging(app);
+			
+			const vapidKey = import.meta.env.VITE_VAPID_KEY;
+			if (!vapidKey) {
+				console.log('VAPID key not configured');
+				return;
+			}
+
+			const token = await getToken(messaging, { vapidKey });
+			if (token) {
+				// Save FCM token to user document
+				await updateDoc(doc(db, 'users', uid), { fcmToken: token });
+				console.log('FCM token saved successfully');
+			}
+		} catch (error) {
+			console.error('Error setting up notifications:', error);
+		}
+	}
 
 	function closeWizard() {
 		dispatch('close');

@@ -3,16 +3,32 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import SignupWizard from '$lib/components/SignupWizard.svelte';
+	// HERO RANDOMIZER: pull hero array, pick random URL
+	import { getDoc, doc } from 'firebase/firestore';
+	import { db } from '$lib/firebase';
 
 	let mounted = false;
 	let showSignup = false;
+	let heroURL = '/static/hero.jpg'; // default fallback
 
 	// Social proof indicators
 	let onlineCount = 0;
 	let recentRatings = 0;
 
-	onMount(() => {
+	onMount(async () => {
 		mounted = true;
+
+		// Load random hero image
+		try {
+			const snap = await getDoc(doc(db, 'settings', 'heroImages'));
+			if (snap.exists()) {
+				const data = snap.data();
+				const urls = data.urls || ['/static/hero.jpg'];
+				heroURL = urls[Math.floor(Math.random() * urls.length)];
+			}
+		} catch (error) {
+			console.log('Using default hero image');
+		}
 
 		// Redirect if already authenticated
 		if ($user && $userProfile) {
@@ -63,7 +79,7 @@
 		<!-- Hero Background - full-screen blurred attractive face -->
 		<div
 			class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-			style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&h=1600&fit=crop&crop=face'); filter: blur(8px); transform: scale(1.1);"
+			style="background-image: url('{heroURL}'); filter: blur(8px); transform: scale(1.1);"
 		></div>
 
 		<!-- Glass-morphism overlay -->
