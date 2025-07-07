@@ -3,6 +3,9 @@ import { SvelteKitPWA } from '@vite-pwa/sveltekit'; // Tactical Import
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	build: {
+		chunkSizeWarningLimit: 800 // Increase limit to suppress large chunk warnings
+	},
 	plugins: [
 		sveltekit(),
 		// Tactical Order: "Configure the SvelteKitPWA plugin."

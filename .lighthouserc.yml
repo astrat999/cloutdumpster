@@ -1,0 +1,12 @@
+ci:
+  collect:
+    url:
+      - https://cloutdumpster.com/          # prod
+      - https://cloutdumpster.com/feed
+      - https://cloutdumpster.com/profile/demoUser
+    numberOfRuns: 3
+    settings:
+      preset: desktop
+  upload:
+    target: filesystem
+    outputDir: ./lhci-results

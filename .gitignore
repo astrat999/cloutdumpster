@@ -18,6 +18,11 @@ Thumbs.db
 !.env.example
 !.env.test
 
+# Local build/test artifacts
+build.log
+prettier.log
+lhci-results/
+
 # Firebase Debug Logs
 firebase-debug.log*
 firebase-debug.*.log*

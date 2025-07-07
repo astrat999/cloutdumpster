@@ -48,6 +48,17 @@ jobs:
         with:
           args: deploy --dir=build --prod
 
+      - name: 🚀 Run Lighthouse CI
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: npx lhci autorun
+
+      - name: 📊 Upload LHCI Results
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lhci-results
+          path: lhci-results
+
       - name: 👀 Deploy Preview (PR only)
         if: github.event_name == 'pull_request'
         uses: netlify/actions/cli@v2
